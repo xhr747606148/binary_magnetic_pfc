@@ -1,0 +1,59 @@
+%% Phase field crystral Lagrange equation
+clear 
+clc
+syms x y epsilon t  M1 alpha beta gamma12 gamma1 gamma2 eta eta1 eta2 theta theta1 theta2 a1 a2 a12 
+
+phi1 = cos(2*pi*x/32)*cos(2*pi*y/32)*cos(t);
+phi2 = cos(pi*x/32)*cos(pi*y/32)*cos(t);
+M = [sin(8*pi*x/128)*sin(8*pi*y/128)*cos(t),cos(8*pi*x/128)*cos(8*pi*y/128)*cos(t)];
+H = [sin(8*pi*x/128)*cos(8*pi*y/256),cos(8*pi*y/256)];
+k1 = diff(phi1,x,2) + diff(phi1,y,2);
+k2 = diff(phi2,x,2) + diff(phi2,y,2);
+% R1=F_derivative_phi(phi,M,epsilon,alpha,beta,gamma,eta,theta1,theta2);
+M_1 = sin(8*pi*x/128)*sin(8*pi*y/128)*cos(t);
+M_2 = cos(8*pi*x/128)*cos(8*pi*y/128)*cos(t);
+norm1 = M_1.^2 + M_2.^2;
+% div1 = diff(Mphi*M(:,1),x)+diff(Mphi*M(:,2),y);
+
+norm2 = M_1 .* diff(phi,x) + M_2 .* diff(phi,y);
+gradient_M = [norm2.*M_1,norm2.*M_2];
+div1 = diff(norm2.*M_1,x)+diff(norm2.*M_2,y);
+
+gradient_phi = diff(phi1,x).^2 + diff(phi1,y).^2;
+gradient_phiphi = [gradient_phi.* diff(phi1,x),gradient_phi.*diff(phi1,y)];
+div2 = diff(gradient_phi.* diff(phi,x),x)+diff(gradient_phi.*diff(phi,y),y);
+
+R1 = phi1.^3 - epsilon * phi1 + eta.*(abs(phi1)-phi1).*phi1 + gamma12.*phi1.*phi2.^2  - gamma1 * norm1 - theta1 .* div2 + eta1 .* div1;
+mu = phi +2*k + ( diff(k,x,2) + diff(k,y,2))+R1;
+
+% tmp = phi.^3 +(1-epsilon)*phi;
+
+g = simplify( diff(phi,t) +M1* mu - M1*1./(128*128)*int(int(mu,x,0,128),y,0,128));
+
+
+g=char(g);
+g= strrep(g,'*','*');
+g= strrep(g,'/','./');
+g= strrep(g,'^','.^')
+% function r = F_derivative_phi(phi,M,epsilon,alpha,beta,gamma,eta,theta1,theta2)
+% %     r = phi.^3  - epsilon * phi  ;
+% Nabla_phi1=[phi(:,2)-phi(:,1),(phi(:,3:size(phi,2))-phi(:,1:size(phi,2)-2))/2,phi(:,size(phi,2))-phi(:,size(phi,2)-1)];
+% Nabla_phi2=[phi(2,:)-phi(1,:);(phi(3:size(phi,1),:)-phi(1:size(phi,1)-2,:))/2;phi(size(phi,1),:)-phi(size(phi,1)-1,:)];
+% %参见https://blog.csdn.net/qq_41624868/article/details/110121516的计算矩阵的梯度怎样保持维度一致的技巧
+% M_1=M(:,1:size(M,2)/2);M_2=M(:,size(M,2)/2+1:end);
+% norm1_M=(M_1.^2+M_2.^2);
+% M_Nabla_phi=M_1*Nabla_phi1+M_2*Nabla_phi2;
+% norm_A=[M_Nabla_phi*M_1,M_Nabla_phi*M_2];
+% A_1=norm_A(:,1:size(norm_A,2)/2);A_2=norm_A(:,size(norm_A,2)/2+1:end);
+% Nabla_norm_A1=[A_1(:,2)-A_1(:,1),(A_1(:,3:size(A_1,2))-A_1(:,1:size(A_1,2)-2))/2,A_1(:,size(A_1,2))-A_1(:,size(A_1,2)-1)];
+% Nabla_norm_A2=[A_2(2,:)-A_2(1,:);(A_2(3:size(A_2,1),:)-A_2(1:size(A_2,1)-2,:))/2;A_2(size(A_2,1),:)-A_2(size(A_2,1)-1,:)];
+% div=Nabla_norm_A1+Nabla_norm_A2;
+% graident_phi=[Nabla_phi1,Nabla_phi2];
+% norm_graident_phi=(Nabla_phi1.^2+Nabla_phi2.^2);
+% phiphi=[norm_graident_phi*Nabla_phi1,norm_graident_phi*Nabla_phi2];
+% B_1=phiphi(:,1:size(phiphi,2)/2);B_2=phiphi(:,size(phiphi,2)/2+1:end);
+% Nabla_norm_B1=[B_1(:,2)-B_1(:,1),(B_1(:,3:size(B_1,2))-B_1(:,1:size(B_1,2)-2))/2,B_1(:,size(B_1,2))-B_1(:,size(B_1,2)-1)];
+% Nabla_norm_B2=[B_2(2,:)-B_2(1,:);(B_2(3:size(B_2,1),:)-B_2(1:size(B_2,1)-2,:))/2;B_2(size(B_2,1),:)-B_2(size(B_2,1)-1,:)];
+% div2=Nabla_norm_B1+Nabla_norm_B2;
+% r=phi.^3-epsilon*phi+eta*div-gamma*norm1_M-theta2*div2;
+% end
